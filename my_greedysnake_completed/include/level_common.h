@@ -47,7 +47,7 @@ void snake_move(Snake* s);
 void snake_grow(Snake* s);
 int check_self_collision(const Snake* s);
 int check_wall_collision(const Snake* s);
-void place_food_safe(Food* f, const Snake* s, int type);
+int place_food_safe(Food* f, const Snake* s, int type);
 
 #ifdef __cplusplus
 }
