@@ -11,6 +11,9 @@ extern "C" {
 void draw_board(const Snake* s, const Food* f);
 void process_input(Snake* s, int* game_over);
 
+/* 专为关卡2设计的渲染函数，支持多个食物和障碍物 */
+void draw_board_level2(const Snake* s, const Food foods[], int food_count, const int obs_x[], const int obs_y[], int obs_count);
+
 #ifdef __cplusplus
 }
 #endif

@@ -3,7 +3,8 @@
 #include <conio.h>
 
 void draw_board(const Snake* s, const Food* f) {
-    clear_screen();
+    // 使用光标归位代替清屏，避免画面闪烁
+    set_cursor_pos(0, 0);
     
     // 绘制地图
     for (int y = 0; y < HEIGHT; y++) {
@@ -54,7 +55,7 @@ void draw_board(const Snake* s, const Food* f) {
     // 绘制分数板
     set_cursor_pos(0, HEIGHT);
     set_color(15);
-    printf("Score: %d | Length: %d\n", s->score, s->length);
+    printf("Score: %d | Length: %d          \n", s->score, s->length);
 }
 
 void process_input(Snake* s, int* game_over) {
@@ -88,4 +89,81 @@ void process_input(Snake* s, int* game_over) {
             }
         }
     }
+}
+
+void draw_board_level2(const Snake* s, const Food foods[], int food_count, const int obs_x[], const int obs_y[], int obs_count) {
+    set_cursor_pos(0, 0);
+    
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            set_cursor_pos(x, y);
+            
+            // 绘制边界
+            if (y == 0 || y == HEIGHT - 1 || x == 0 || x == WIDTH - 1) {
+                set_color(15);
+                printf("#");
+                continue;
+            }
+            
+            // 绘制障碍物
+            int is_obs = 0;
+            for (int i = 0; i < obs_count; i++) {
+                if (obs_x[i] == x && obs_y[i] == y) {
+                    set_color(4); // 深红色
+                    printf("M");
+                    is_obs = 1;
+                    break;
+                }
+            }
+            if (is_obs) continue;
+            
+            // 绘制食物
+            int is_food = 0;
+            for (int i = 0; i < food_count; i++) {
+                if (foods[i].x == x && foods[i].y == y) {
+                    if (foods[i].type == FOOD_NORMAL) {
+                        set_color(10); // 亮绿色
+                        printf("$");
+                    } else if (foods[i].type == FOOD_POISON) {
+                        set_color(12); // 红色
+                        printf("X");
+                    } else if (foods[i].type == FOOD_SPEED_UP) {
+                        set_color(11); // 青色
+                        printf("A");
+                    } else if (foods[i].type == FOOD_SPEED_DOWN) {
+                        set_color(13); // 紫色
+                        printf("V");
+                    }
+                    is_food = 1;
+                    break;
+                }
+            }
+            if (is_food) continue;
+            
+            // 绘制蛇
+            int is_snake = 0;
+            for (int i = 0; i < s->length; i++) {
+                if (s->x[i] == x && s->y[i] == y) {
+                    is_snake = 1;
+                    if (i == 0) {
+                        set_color(14); // 头
+                        printf("@");
+                    } else {
+                        set_color(2);  // 身
+                        printf("*");
+                    }
+                    break;
+                }
+            }
+            
+            if (!is_snake) {
+                printf(" ");
+            }
+        }
+    }
+    
+    // 绘制分数板
+    set_cursor_pos(0, HEIGHT);
+    set_color(15);
+    printf("Score: %d | Length: %d | Level 2 (Advanced)          \n", s->score, s->length);
 }

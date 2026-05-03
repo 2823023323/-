@@ -4,6 +4,7 @@
 #include <conio.h>
 #include "../include/game_shared.h"
 #include "../include/level1.h"
+#include "../include/level2.h"
 #include "../include/leaderboard.h"
 
 void show_main_menu() {
@@ -14,10 +15,11 @@ void show_main_menu() {
     printf("=========================================\n\n");
     set_color(15);
     printf("   1. Start Classic Mode (Level 1)\n");
-    printf("   2. View Leaderboard\n");
-    printf("   3. Exit\n\n");
+    printf("   2. Start Advanced Mode (Level 2)\n");
+    printf("   3. View Leaderboard\n");
+    printf("   4. Exit\n\n");
     printf("=========================================\n");
-    printf("Please press 1, 2 or 3 to select...\n");
+    printf("Please press 1, 2, 3 or 4 to select...\n");
 }
 
 int main() {
@@ -37,6 +39,10 @@ int main() {
                         choice_made = 1;
                         break;
                     case '2':
+                        level2_run();
+                        choice_made = 1;
+                        break;
+                    case '3':
                         clear_screen();
                         set_color(15);
                         printf("\n--- LEADERBOARD ---\n");
@@ -54,7 +60,7 @@ int main() {
                         _getch(); // 等待按键
                         choice_made = 1;
                         break;
-                    case '3':
+                    case '4':
                         clear_screen();
                         set_color(15);
                         printf("Goodbye!\n");
