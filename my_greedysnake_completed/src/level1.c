@@ -5,6 +5,7 @@
 #include "../include/leaderboard.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <conio.h>
 
 void level1_run(void) {
     int restart = 1;
@@ -19,7 +20,7 @@ void level1_run(void) {
         place_food_safe(&food, &snake, FOOD_NORMAL);
         
         unsigned long last_move_time = get_tick_ms();
-        int move_interval = 150; // 毫秒
+        unsigned long move_interval = 150; // 毫秒
         
         // 主循环
         while (snake.alive && !game_over) {
