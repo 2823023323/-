@@ -13,17 +13,20 @@
  *       蛇身从蛇头位置向左依次排列。
  * 防呆设计：空指针检查，避免野指针导致崩溃。
  */
-void snake_init(Snake* s, int startX, int startY) {
-    if (!s) return;  // 防呆：空指针检查
-    s->length = 3;
-    s->direction = DIR_RIGHT;
-    s->score = 0;
-    s->alive = 1;
-    
+void snake_init(Snake *s, int startX, int startY)
+{
+    if (!s)
+        return;               // 防呆：若传入空指针则直接返回，避免崩溃
+    s->length = 3;            // 初始长度设为3节
+    s->direction = DIR_RIGHT; // 初始移动方向设为向右
+    s->score = 0;             // 初始得分为0
+    s->alive = 1;             // 标记为存活
+
     // 初始化蛇身：蛇头在 (startX, startY)，身体向左延伸
-    for (int i = 0; i < s->length; i++) {
-        s->x[i] = startX - i;
-        s->y[i] = startY;
+    for (int i = 0; i < s->length; i++)
+    {
+        s->x[i] = startX - i; // 第i节的x坐标：头为 startX，下一节为 startX-1，以此类推
+        s->y[i] = startY;     // 所有节的y坐标都与头同一行 startY
     }
 }
 
@@ -34,21 +37,33 @@ void snake_init(Snake* s, int startX, int startY) {
  *       这种方式等效于"尾部删除一节，头部新增一节"。
  * 防呆设计：空指针检查 + 死亡状态检查。
  */
-void snake_move(Snake* s) {
-    if (!s || !s->alive) return;  // 防呆：空指针和死亡状态检查
-    
+void snake_move(Snake *s)
+{
+    if (!s || !s->alive)
+        return; // 防呆：空指针和死亡状态检查
+
     // 蛇身跟随：从尾到头，每节继承前一节的坐标
-    for (int i = s->length - 1; i > 0; i--) {
+    for (int i = s->length - 1; i > 0; i--)
+    {
         s->x[i] = s->x[i - 1];
         s->y[i] = s->y[i - 1];
     }
-    
+
     // 根据方向更新蛇头坐标
-    switch (s->direction) {
-        case DIR_UP:    s->y[0]--; break;
-        case DIR_DOWN:  s->y[0]++; break;
-        case DIR_LEFT:  s->x[0]--; break;
-        case DIR_RIGHT: s->x[0]++; break;
+    switch (s->direction)
+    {
+    case DIR_UP:
+        s->y[0]--;
+        break;
+    case DIR_DOWN:
+        s->y[0]++;
+        break;
+    case DIR_LEFT:
+        s->x[0]--;
+        break;
+    case DIR_RIGHT:
+        s->x[0]++;
+        break;
     }
 }
 
@@ -58,9 +73,12 @@ void snake_move(Snake* s) {
  *       下一帧移动时，尾节点会自动跟随前一节移动，实现自然衔接。
  * 防呆设计：长度不超过 MAX_SNAKE，防止数组越界。
  */
-void snake_grow(Snake* s) {
-    if (!s || !s->alive) return;
-    if (s->length < MAX_SNAKE) {
+void snake_grow(Snake *s)
+{
+    if (!s || !s->alive)
+        return;
+    if (s->length < MAX_SNAKE)
+    {
         s->x[s->length] = s->x[s->length - 1];
         s->y[s->length] = s->y[s->length - 1];
         s->length++;
@@ -72,10 +90,14 @@ void snake_grow(Snake* s) {
  * 原理：遍历蛇身第2节到最后一节，判断是否有节点与蛇头坐标重合。
  * 返回值：1=发生碰撞, 0=未碰撞
  */
-int check_self_collision(const Snake* s) {
-    if (!s) return 0;
-    for (int i = 1; i < s->length; i++) {
-        if (s->x[0] == s->x[i] && s->y[0] == s->y[i]) {
+int check_self_collision(const Snake *s)
+{
+    if (!s)
+        return 0;
+    for (int i = 1; i < s->length; i++)
+    {
+        if (s->x[0] == s->x[i] && s->y[0] == s->y[i])
+        {
             return 1;
         }
     }
@@ -89,10 +111,13 @@ int check_self_collision(const Snake* s) {
  *       蛇的合法活动范围为 1 <= x <= WIDTH-2, 1 <= y <= HEIGHT-2。
  * 返回值：1=撞墙, 0=安全
  */
-int check_wall_collision(const Snake* s) {
-    if (!s) return 0;
+int check_wall_collision(const Snake *s)
+{
+    if (!s)
+        return 0;
     if (s->x[0] <= 0 || s->x[0] >= WIDTH - 1 ||
-        s->y[0] <= 0 || s->y[0] >= HEIGHT - 1) {
+        s->y[0] <= 0 || s->y[0] >= HEIGHT - 1)
+    {
         return 1;
     }
     return 0;
@@ -106,31 +131,38 @@ int check_wall_collision(const Snake* s) {
  *       当蛇占满地图时返回0（可作为"游戏胜利"判定依据）。
  * 返回值：1=放置成功, 0=地图已满无法放置
  */
-int place_food_safe(Food* f, const Snake* s, int type) {
-    if (!f || !s) return 0;
-    
+int place_food_safe(Food *f, const Snake *s, int type)
+{
+    if (!f || !s)
+        return 0;
+
     // 计算可用空间：若蛇身已占满整个活动区域，直接返回失败
     int max_cells = (WIDTH - 2) * (HEIGHT - 2);
-    if (s->length >= max_cells) return 0;
-    
+    if (s->length >= max_cells)
+        return 0;
+
     int attempts = 0;
     int valid = 0;
-    while (!valid && attempts < 1000) {
+    while (!valid && attempts < 1000)
+    {
         // 在有效活动区域内生成坐标（排除边框）
         f->x = 1 + rand() % (WIDTH - 2);
         f->y = 1 + rand() % (HEIGHT - 2);
         valid = 1;
         attempts++;
-        
+
         // 确保不在蛇身上
-        for (int i = 0; i < s->length; i++) {
-            if (s->x[i] == f->x && s->y[i] == f->y) {
+        for (int i = 0; i < s->length; i++)
+        {
+            if (s->x[i] == f->x && s->y[i] == f->y)
+            {
                 valid = 0;
                 break;
             }
         }
     }
-    if (!valid) return 0;  // 尝试次数耗尽，可能地图接近满
+    if (!valid)
+        return 0; // 尝试次数耗尽，可能地图接近满
     f->type = type;
     f->spawn_time = get_tick_ms();
     return 1;

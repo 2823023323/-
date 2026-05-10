@@ -13,9 +13,10 @@
  *       再用 SetConsoleCursorPosition 设置光标位置。
  * 参数：x - 列坐标, y - 行坐标 (均从0开始)
  */
-void set_cursor_pos(int x, int y) {
+void set_cursor_pos(int x, int y)
+{
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD pos = { (SHORT)x, (SHORT)y };
+    COORD pos = {(SHORT)x, (SHORT)y};
     SetConsoleCursorPosition(hConsole, pos);
 }
 
@@ -24,12 +25,13 @@ void set_cursor_pos(int x, int y) {
  * 原理：获取当前光标信息，将 bVisible 属性设为 FALSE，
  *       避免游戏运行时光标闪烁干扰视觉体验。
  */
-void hide_cursor(void) {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(hConsole, &cursorInfo);
-    cursorInfo.bVisible = FALSE;
-    SetConsoleCursorInfo(hConsole, &cursorInfo);
+void hide_cursor(void)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 获取标准输出的句柄
+    CONSOLE_CURSOR_INFO cursorInfo;                    // 声明用于存放光标信息的结构体
+    GetConsoleCursorInfo(hConsole, &cursorInfo);       // 从控制台读取当前光标信息到结构体
+    cursorInfo.bVisible = FALSE;                       // 将可见性标志设为 FALSE（隐藏光标）
+    SetConsoleCursorInfo(hConsole, &cursorInfo);       // 将修改后的光标信息设置回控制台
 }
 
 /*
@@ -38,7 +40,8 @@ void hide_cursor(void) {
  *       注意：频繁调用会导致画面闪烁，游戏主循环中应改用
  *       set_cursor_pos(0,0) 进行光标归位覆盖绘制。
  */
-void clear_screen(void) {
+void clear_screen(void)
+{
     system("cls");
 }
 
@@ -47,7 +50,8 @@ void clear_screen(void) {
  * 原理：调用 Windows API GetTickCount()，
  *       用于计算帧间隔、控制蛇的移动速度。
  */
-unsigned long get_tick_ms(void) {
+unsigned long get_tick_ms(void)
+{
     return GetTickCount();
 }
 
@@ -58,7 +62,8 @@ unsigned long get_tick_ms(void) {
  *       常用值：2=深绿, 3=深青, 4=深红, 6=深黄,
  *              10=亮绿, 11=亮青, 12=亮红, 13=紫, 14=亮黄, 15=白
  */
-void set_color(int color) {
+void set_color(int color)
+{
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
 }

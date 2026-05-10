@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="greedysnake/greedysnake.vcxproj" />
+  <Project Path="greedysnake/greedysnake.vcxproj" Id="a2bca60b-4874-4c0c-8b37-a786b9a4f702" />
 </Solution>
