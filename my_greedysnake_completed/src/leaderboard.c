@@ -50,8 +50,11 @@ void save_leaderboard(const LBEntry arr[], int count) {
     FILE* fp = fopen(LEADERBOARD_FILE, "w");
     if (!fp) return;
     
+    // 写入题目要求的表头
+    fprintf(fp, "玩家名 分数\n");
+    
     for (int i = 0; i < count; i++) {
-        fprintf(fp, "%s %d\n", arr[i].name, arr[i].score);
+        fprintf(fp, "%-15s %d\n", arr[i].name, arr[i].score);
     }
     fclose(fp);
 }
