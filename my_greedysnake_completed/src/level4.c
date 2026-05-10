@@ -209,14 +209,18 @@ void level4_run(void) {
         // ===== 游戏结束处理 =====
         set_cursor_pos(0, HEIGHT + 2);
         set_color(15);
-        if (win) {
-            set_color(10);
-            printf("\n==== CONGRATULATIONS! YOU SURVIVED 60 SECONDS! ====\n");
-            set_color(15);
+        if (game_over) {
+            printf("\n==== GAME EXITED ====\n");
         } else {
-            printf("\n==== YOU DIED! YOU SURVIVED %d SECONDS ====\n", 60 - time_left);
+            if (win) {
+                set_color(10);
+                printf("\n==== CONGRATULATIONS! YOU SURVIVED 60 SECONDS! ====\n");
+                set_color(15);
+            } else {
+                printf("\n==== YOU DIED! YOU SURVIVED %d SECONDS ====\n", 60 - time_left);
+            }
+            prompt_and_update_leaderboard(snake.score, 4);
         }
-        prompt_and_update_leaderboard(snake.score);
         
         printf("\nRestart Level 4? (y/n): ");
         char choice;

@@ -92,7 +92,11 @@ void level1_run(void) {
         // ===== 游戏结束处理 =====
         set_cursor_pos(0, HEIGHT + 2);
         set_color(15);
-        prompt_and_update_leaderboard(snake.score);
+        if (game_over) {
+            printf("\n==== GAME EXITED ====\n");
+        } else {
+            prompt_and_update_leaderboard(snake.score, 1);
+        }
         
         // 重启询问
         printf("\nRestart? (y/n): ");

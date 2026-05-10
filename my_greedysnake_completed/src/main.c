@@ -66,17 +66,8 @@ int main() {
                     case '5': {
                         clear_screen();
                         set_color(15);
-                        printf("\n--- LEADERBOARD (Top %d) ---\n", LEADERBOARD_SIZE);
-                        LBEntry entries[LEADERBOARD_SIZE];
-                        int count = load_leaderboard(entries, LEADERBOARD_SIZE);
-                        if (count == 0) {
-                            printf("No records found.\n");
-                        } else {
-                            for (int i = 0; i < count; i++) {
-                                printf("%d. %-15s %d\n", i + 1, entries[i].name, entries[i].score);
-                            }
-                        }
-                        printf("---------------------------\n");
+                        printf("\n========= ALL LEADERBOARDS =========\n");
+                        show_all_leaderboards();
                         printf("\nPress any key to return...");
                         _getch();
                         choice_made = 1;

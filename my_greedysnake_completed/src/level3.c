@@ -93,12 +93,22 @@ void level3_run(void) {
         clear_screen();
         
         // P1 在左侧出生，初始方向向右
+        // snake_init 默认身体向左延伸，正好适配向右移动
         snake_init(&s1, WIDTH / 3, HEIGHT / 2);
         s1.direction = DIR_RIGHT;
         
         // P2 在右侧出生，初始方向向左
+        // Bug修复：snake_init 默认身体向左延伸（x[0], x[0]-1, x[0]-2），
+        //   若方向设为 DIR_LEFT，第一步蛇头左移后会与 x[2] 重合，触发自撞。
+        //   解决方案：手动初始化P2，让身体向右延伸（x[0], x[0]+1, x[0]+2），
+        //   这样向左移动时蛇头远离身体，不会自撞。
         snake_init(&s2, WIDTH * 2 / 3, HEIGHT / 2);
         s2.direction = DIR_LEFT;
+        // 覆盖身体坐标：让身体向右延伸（与移动方向相反）
+        for (int i = 0; i < s2.length; i++) {
+            s2.x[i] = (WIDTH * 2 / 3) + i;
+            s2.y[i] = HEIGHT / 2;
+        }
         
         place_food_safe_level3(&food, &s1, &s2);
         
@@ -166,24 +176,30 @@ void level3_run(void) {
         // ===== 对战结算 =====
         set_cursor_pos(0, HEIGHT + 2);
         set_color(15);
-        printf("\n==== BATTLE OVER ====\n");
-        if (winner == 1) {
-            set_color(11); printf("Player 1 (WASD/Blue) WINS!\n");
-        } else if (winner == 2) {
-            set_color(14); printf("Player 2 (Arrow/Yellow) WINS!\n");
+        if (game_over) {
+            /* ESC退出：不是真正的对战结果，跳过排行榜 */
+            printf("\n==== GAME EXITED ====\n");
         } else {
-            set_color(15); printf("DRAW! (Mutual Destruction)\n");
-        }
-        set_color(15);
-        printf("P1 Score: %d | P2 Score: %d\n", s1.score, s2.score);
-        
-        // 获胜方存入排行榜（继承前2关的排行榜机制）
-        if (winner == 1) {
-            prompt_and_update_leaderboard(s1.score);
-        } else if (winner == 2) {
-            prompt_and_update_leaderboard(s2.score);
-        } else {
-            printf("\nDraw - no leaderboard entry.\n");
+            printf("\n==== BATTLE OVER ====\n");
+            if (winner == 1) {
+                set_color(11); printf("Player 1 (WASD/Blue) WINS!\n");
+            } else if (winner == 2) {
+                set_color(14); printf("Player 2 (Arrow/Yellow) WINS!\n");
+            } else {
+                set_color(15); printf("DRAW! (Mutual Destruction)\n");
+            }
+            set_color(15);
+            printf("P1 Score: %d | P2 Score: %d\n\n", s1.score, s2.score);
+            
+            // 双方都可以记录到排行榜
+            printf("-- Record scores to leaderboard --\n");
+            set_color(11);
+            prompt_player_and_record("Player 1 (Blue)", s1.score, 3);
+            set_color(14);
+            prompt_player_and_record("Player 2 (Yellow)", s2.score, 3);
+            set_color(15);
+            
+            show_leaderboard(3);
         }
         
         printf("\nRestart Double Player? (y/n): ");
