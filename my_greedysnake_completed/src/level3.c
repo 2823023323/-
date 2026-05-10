@@ -50,12 +50,15 @@ int place_food_safe_level3(Food* f, const Snake* s1, const Snake* s2) {
 }
 
 /*
- * check_collision_with_other - 检测一条蛇是否撞到另一条蛇的身体
- * 返回值：1=碰撞, 0=安全
+ * check_collision_with_other - 检测一条蛇的头是否撞到另一条蛇的【身体】
+ * 注意：从 i=1 开始遍历，跳过对方蛇头（index 0）。
+ *       头对头碰撞由主循环中单独的 head-on check 判定为平局。
+ *       头撞身体 = 判负，头撞头 = 平局，两条逻辑完全分离。
+ * 返回值：1=撞到对方身体, 0=安全
  */
 int check_collision_with_other(const Snake* s, const Snake* other) {
     if (!s || !other) return 0;
-    for (int i = 0; i < other->length; i++) {
+    for (int i = 1; i < other->length; i++) {
         if (s->x[0] == other->x[i] && s->y[0] == other->y[i]) {
             return 1;
         }
