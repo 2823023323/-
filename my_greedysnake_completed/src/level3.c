@@ -20,24 +20,33 @@
 /*
  * place_food_safe_level3 - 在避开两条蛇的位置生成食物
  */
-void place_food_safe_level3(Food* f, const Snake* s1, const Snake* s2) {
+int place_food_safe_level3(Food* f, const Snake* s1, const Snake* s2) {
+    /* Bug修复：原版无逃出机制，两蛇填满地图时死循环。
+       加入地图满判断和最大尝试次数保护。 */
+    int max_cells = (WIDTH - 2) * (HEIGHT - 2);
+    if (s1->length + s2->length >= max_cells) return 0; /* 地图已满，无法放置 */
+
     int valid = 0;
-    while (!valid) {
+    int attempts = 0;
+    while (!valid && attempts < 2000) {
         f->x = 1 + rand() % (WIDTH - 2);
         f->y = 1 + rand() % (HEIGHT - 2);
         valid = 1;
-        
+        attempts++;
+
         for (int i = 0; i < s1->length; i++) {
             if (s1->x[i] == f->x && s1->y[i] == f->y) { valid = 0; break; }
         }
         if (!valid) continue;
-        
+
         for (int i = 0; i < s2->length; i++) {
             if (s2->x[i] == f->x && s2->y[i] == f->y) { valid = 0; break; }
         }
     }
+    if (!valid) return 0;
     f->type = FOOD_NORMAL;
     f->spawn_time = get_tick_ms();
+    return 1;
 }
 
 /*
@@ -141,7 +150,12 @@ void level3_run(void) {
                 }
                 
                 if (food_eaten) {
-                    place_food_safe_level3(&food, &s1, &s2);
+                    if (!place_food_safe_level3(&food, &s1, &s2)) {
+                        s1.alive = 0;
+                        s2.alive = 0;
+                        winner = 0;
+                        break;
+                    }
                 }
                 
                 draw_board_level3(&s1, &s2, &food);

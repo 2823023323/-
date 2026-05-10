@@ -143,7 +143,7 @@ int place_food_safe(Food *f, const Snake *s, int type)
 
     int attempts = 0;
     int valid = 0;
-    while (!valid && attempts < 1000)
+    while (!valid && attempts < 10000)
     {
         // 在有效活动区域内生成坐标（排除边框）
         f->x = 1 + rand() % (WIDTH - 2);

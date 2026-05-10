@@ -30,10 +30,12 @@
 void init_obstacles(int obs_x[], int obs_y[], int obs_count, const Snake* s) {
     for (int i = 0; i < obs_count; i++) {
         int valid = 0;
-        while (!valid) {
+        int attempts = 0;
+        while (!valid && attempts < 10000) {
             obs_x[i] = 2 + rand() % (WIDTH - 4);
             obs_y[i] = 2 + rand() % (HEIGHT - 4);
             valid = 1;
+            attempts++;
             
             // 检查与蛇身的碰撞
             for (int j = 0; j < s->length; j++) {
@@ -52,6 +54,10 @@ void init_obstacles(int obs_x[], int obs_y[], int obs_count, const Snake* s) {
                 }
             }
         }
+        if (!valid) {
+            obs_x[i] = 0; // Put at border wall if failed to find a spot
+            obs_y[i] = 0;
+        }
     }
 }
 
@@ -59,22 +65,26 @@ void init_obstacles(int obs_x[], int obs_y[], int obs_count, const Snake* s) {
 // 核心算法2：安全食物放置 (Safe Food Spawning)
 // 随机生成食物坐标，确保不与蛇身、障碍物、已有食物重合。
 // ==========================================================
-void place_food_safe_level2(Food* f, const Snake* s, int type,
+int place_food_safe_level2(Food* f, const Snake* s, int type,
                             const int obs_x[], const int obs_y[], int obs_count,
                             const Food other_foods[], int other_count) {
+    /* Bug修复：原版无尝试次数上限，地图拥挤时 while(!valid) 死循环。
+       加入 attempts 计数器，提升到 10000 次防止误判，超过则直接返回。 */
     int valid = 0;
-    while (!valid) {
+    int attempts = 0;
+    while (!valid && attempts < 10000) {
         f->x = 1 + rand() % (WIDTH - 2);
         f->y = 1 + rand() % (HEIGHT - 2);
         valid = 1;
-        
-        // 检查与蛇身碰撞
+        attempts++;
+
+        /* 检查与蛇身碰撞 */
         for (int i = 0; i < s->length; i++) {
             if (s->x[i] == f->x && s->y[i] == f->y) {
                 valid = 0; break;
             }
         }
-        // 检查与障碍物碰撞
+        /* 检查与障碍物碰撞 */
         if (valid) {
             for (int i = 0; i < obs_count; i++) {
                 if (obs_x[i] == f->x && obs_y[i] == f->y) {
@@ -82,17 +92,20 @@ void place_food_safe_level2(Food* f, const Snake* s, int type,
                 }
             }
         }
-        // 检查与其他已有食物碰撞（防止两个食物重叠）
-        if (valid) {
+        /* 检查与其他已有食物碰撞（防止两个食物重叠） */
+        if (valid && other_foods != NULL) {
             for (int i = 0; i < other_count; i++) {
+                if (&other_foods[i] == (const Food*)f) continue; /* 跳过自身，防止死循环 */
                 if (other_foods[i].x == f->x && other_foods[i].y == f->y) {
                     valid = 0; break;
                 }
             }
         }
     }
+    if (!valid) return 0;
     f->type = type;
     f->spawn_time = get_tick_ms();
+    return 1;
 }
 
 void level2_run(void) {
@@ -199,13 +212,17 @@ void level2_run(void) {
                         // 30% 概率刷出随机道具
                         if (food_count < MAX_FOODS && (rand() % 100 < 30)) {
                             int buff_type = (rand() % 2 == 0) ? FOOD_SPEED_UP : FOOD_SPEED_DOWN;
-                            place_food_safe_level2(&foods[food_count], &snake, buff_type,
-                                                   obs_x, obs_y, obs_count, foods, food_count);
-                            food_count++;
+                            if (place_food_safe_level2(&foods[food_count], &snake, buff_type,
+                                                   obs_x, obs_y, obs_count, foods, food_count)) {
+                                food_count++;
+                            }
                         }
                         // 重新生成普通食物
-                        place_food_safe_level2(&foods[i], &snake, FOOD_NORMAL,
-                                               obs_x, obs_y, obs_count, foods, food_count);
+                        if (!place_food_safe_level2(&foods[i], &snake, FOOD_NORMAL,
+                                               obs_x, obs_y, obs_count, foods, food_count)) {
+                            snake.alive = 0; // 地图已满
+                            break;
+                        }
                         
                     } else if (foods[i].type == FOOD_POISON) {
                         snake.score--;
@@ -219,8 +236,11 @@ void level2_run(void) {
                         }
                         // 重新生成毒食物
                         if (snake.alive) {
-                            place_food_safe_level2(&foods[i], &snake, FOOD_POISON,
-                                                   obs_x, obs_y, obs_count, foods, food_count);
+                            if (!place_food_safe_level2(&foods[i], &snake, FOOD_POISON,
+                                                   obs_x, obs_y, obs_count, foods, food_count)) {
+                                snake.alive = 0; // 地图满了
+                                break;
+                            }
                         }
                         
                     } else if (foods[i].type == FOOD_SPEED_UP) {

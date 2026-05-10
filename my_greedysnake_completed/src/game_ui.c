@@ -90,12 +90,14 @@ void process_input(Snake* s, int* game_over) {
         }
 
         if (ch == -32 || ch == 0 || ch == (char)224) {  // 方向键前导码
-            ch = _getch();
-            switch (ch) {
-                case 72: if (last_dir != DIR_DOWN)  s->direction = DIR_UP;    break;
-                case 80: if (last_dir != DIR_UP)    s->direction = DIR_DOWN;  break;
-                case 75: if (last_dir != DIR_RIGHT) s->direction = DIR_LEFT;  break;
-                case 77: if (last_dir != DIR_LEFT)  s->direction = DIR_RIGHT; break;
+            if (_kbhit()) {
+                ch = _getch();
+                switch (ch) {
+                    case 72: if (last_dir != DIR_DOWN)  s->direction = DIR_UP;    break;
+                    case 80: if (last_dir != DIR_UP)    s->direction = DIR_DOWN;  break;
+                    case 75: if (last_dir != DIR_RIGHT) s->direction = DIR_LEFT;  break;
+                    case 77: if (last_dir != DIR_LEFT)  s->direction = DIR_RIGHT; break;
+                }
             }
         } else {
             // 支持 WASD 字母键控制
@@ -336,12 +338,14 @@ void process_input_level3(Snake* s1, Snake* s2, int* game_over) {
         }
         
         if (ch == -32 || ch == 0 || ch == (char)224) {
-            ch = _getch();
-            switch (ch) {
-                case 72: if (last_dir2 != DIR_DOWN)  s2->direction = DIR_UP;    break;
-                case 80: if (last_dir2 != DIR_UP)    s2->direction = DIR_DOWN;  break;
-                case 75: if (last_dir2 != DIR_RIGHT) s2->direction = DIR_LEFT;  break;
-                case 77: if (last_dir2 != DIR_LEFT)  s2->direction = DIR_RIGHT; break;
+            if (_kbhit()) {
+                ch = _getch();
+                switch (ch) {
+                    case 72: if (last_dir2 != DIR_DOWN)  s2->direction = DIR_UP;    break;
+                    case 80: if (last_dir2 != DIR_UP)    s2->direction = DIR_DOWN;  break;
+                    case 75: if (last_dir2 != DIR_RIGHT) s2->direction = DIR_LEFT;  break;
+                    case 77: if (last_dir2 != DIR_LEFT)  s2->direction = DIR_RIGHT; break;
+                }
             }
         } else {
             if      ((ch == 'w' || ch == 'W') && last_dir1 != DIR_DOWN)  s1->direction = DIR_UP;

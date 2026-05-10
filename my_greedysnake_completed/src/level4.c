@@ -55,10 +55,20 @@ void level4_run(void) {
         // 蛇出生在地图中央偏下，避免与移动障碍物#2（y=HEIGHT/2）同行
         snake_init(&snake, WIDTH / 2, HEIGHT / 2 + 2);
         // 生成食物（确保不在移动障碍物的当前位置上）
+        /* Bug修复：place_food_safe返回0表示地图已满，
+           原版忽略返回值导致 fok 永远为0，死循环。
+           现在若放置失败直接跳出，视为胜利（蛇占满地图）。 */
         {
             int food_ok = 0;
-            while (!food_ok) {
-                place_food_safe(&food, &snake, FOOD_NORMAL);
+            int food_attempts = 0;
+            while (!food_ok && food_attempts < 1000) {
+                food_attempts++;
+                if (!place_food_safe(&food, &snake, FOOD_NORMAL)) {
+                    /* 地图已满，无法放食物，触发胜利 */
+                    snake.alive = 0;
+                    win = 1;
+                    break;
+                }
                 food_ok = 1;
                 for (int i = 0; i < MAX_MOB; i++) {
                     if (food.x == mob_x[i] && food.y == mob_y[i]) {
@@ -126,12 +136,17 @@ void level4_run(void) {
                     last_mob_move[i] = current_time;
                     mob_moved = 1;
                     
-                    // 检查是否撞到蛇
-                    for (int j = 0; j < snake.length; j++) {
-                        if (snake.x[j] == mob_x[i] && snake.y[j] == mob_y[i]) {
-                            snake.alive = 0; break;
-                        }
-                    }
+            /* Bug修复：原版 break 只退出内层 j 循环，蛇死后外层 i 循环仍继续。
+               改用 mob_killed 标志，内层 break 后立即跳出外层循环。 */
+            int mob_killed = 0;
+            for (int j = 0; j < snake.length; j++) {
+                if (snake.x[j] == mob_x[i] && snake.y[j] == mob_y[i]) {
+                    snake.alive = 0;
+                    mob_killed = 1;
+                    break;
+                }
+            }
+            if (mob_killed) break;  /* 退出外层 i 循环 */
                 }
             }
             if (!snake.alive) break;
@@ -158,16 +173,24 @@ void level4_run(void) {
                     snake.score++;
                     snake_grow(&snake);
                     // 重新生成食物（避开移动障碍物位置）
+                    /* Bug修复：同上，食物重生时也检查place_food_safe返回值 */
                     {
                         int fok = 0;
-                        while (!fok) {
-                            place_food_safe(&food, &snake, FOOD_NORMAL);
+                        int fok_attempts = 0;
+                        while (!fok && fok_attempts < 1000) {
+                            fok_attempts++;
+                            if (!place_food_safe(&food, &snake, FOOD_NORMAL)) break;
                             fok = 1;
                             for (int i = 0; i < MAX_MOB; i++) {
                                 if (food.x == mob_x[i] && food.y == mob_y[i]) {
                                     fok = 0; break;
                                 }
                             }
+                        }
+                        if (!fok) {
+                            snake.alive = 0;
+                            win = 1;
+                            break;
                         }
                     }
                 }
