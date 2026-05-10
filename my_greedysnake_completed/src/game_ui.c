@@ -78,20 +78,31 @@ void draw_board(const Snake* s, const Food* f) {
 void process_input(Snake* s, int* game_over) {
     if (_kbhit()) {
         char ch = _getch();
+        
+        // --- 核心防反向防自杀逻辑（修复连续快速按键Bug） ---
+        // 获取蛇最后一次真实的移动方向（基于头和第一节脖子的坐标关系）
+        int last_dir = s->direction;
+        if (s->length >= 2) {
+            if (s->x[0] > s->x[1]) last_dir = DIR_RIGHT;
+            else if (s->x[0] < s->x[1]) last_dir = DIR_LEFT;
+            else if (s->y[0] > s->y[1]) last_dir = DIR_DOWN;
+            else if (s->y[0] < s->y[1]) last_dir = DIR_UP;
+        }
+
         if (ch == -32 || ch == 0 || ch == (char)224) {  // 方向键前导码
             ch = _getch();
             switch (ch) {
-                case 72: if (s->direction != DIR_DOWN)  s->direction = DIR_UP;    break;
-                case 80: if (s->direction != DIR_UP)    s->direction = DIR_DOWN;  break;
-                case 75: if (s->direction != DIR_RIGHT) s->direction = DIR_LEFT;  break;
-                case 77: if (s->direction != DIR_LEFT)  s->direction = DIR_RIGHT; break;
+                case 72: if (last_dir != DIR_DOWN)  s->direction = DIR_UP;    break;
+                case 80: if (last_dir != DIR_UP)    s->direction = DIR_DOWN;  break;
+                case 75: if (last_dir != DIR_RIGHT) s->direction = DIR_LEFT;  break;
+                case 77: if (last_dir != DIR_LEFT)  s->direction = DIR_RIGHT; break;
             }
         } else {
             // 支持 WASD 字母键控制
-            if      ((ch == 'w' || ch == 'W') && s->direction != DIR_DOWN)  s->direction = DIR_UP;
-            else if ((ch == 's' || ch == 'S') && s->direction != DIR_UP)    s->direction = DIR_DOWN;
-            else if ((ch == 'a' || ch == 'A') && s->direction != DIR_RIGHT) s->direction = DIR_LEFT;
-            else if ((ch == 'd' || ch == 'D') && s->direction != DIR_LEFT)  s->direction = DIR_RIGHT;
+            if      ((ch == 'w' || ch == 'W') && last_dir != DIR_DOWN)  s->direction = DIR_UP;
+            else if ((ch == 's' || ch == 'S') && last_dir != DIR_UP)    s->direction = DIR_DOWN;
+            else if ((ch == 'a' || ch == 'A') && last_dir != DIR_RIGHT) s->direction = DIR_LEFT;
+            else if ((ch == 'd' || ch == 'D') && last_dir != DIR_LEFT)  s->direction = DIR_RIGHT;
             else if (ch == 27) {  // ESC 键退出
                 *game_over = 1;
                 s->alive = 0;
@@ -306,19 +317,37 @@ void draw_board_level3(const Snake* s1, const Snake* s2, const Food* f) {
 void process_input_level3(Snake* s1, Snake* s2, int* game_over) {
     if (_kbhit()) {
         char ch = _getch();
+        
+        // 分别获取两条蛇的真实物理移动方向
+        int last_dir1 = s1->direction;
+        if (s1->length >= 2) {
+            if (s1->x[0] > s1->x[1]) last_dir1 = DIR_RIGHT;
+            else if (s1->x[0] < s1->x[1]) last_dir1 = DIR_LEFT;
+            else if (s1->y[0] > s1->y[1]) last_dir1 = DIR_DOWN;
+            else if (s1->y[0] < s1->y[1]) last_dir1 = DIR_UP;
+        }
+
+        int last_dir2 = s2->direction;
+        if (s2->length >= 2) {
+            if (s2->x[0] > s2->x[1]) last_dir2 = DIR_RIGHT;
+            else if (s2->x[0] < s2->x[1]) last_dir2 = DIR_LEFT;
+            else if (s2->y[0] > s2->y[1]) last_dir2 = DIR_DOWN;
+            else if (s2->y[0] < s2->y[1]) last_dir2 = DIR_UP;
+        }
+        
         if (ch == -32 || ch == 0 || ch == (char)224) {
             ch = _getch();
             switch (ch) {
-                case 72: if (s2->direction != DIR_DOWN)  s2->direction = DIR_UP;    break;
-                case 80: if (s2->direction != DIR_UP)    s2->direction = DIR_DOWN;  break;
-                case 75: if (s2->direction != DIR_RIGHT) s2->direction = DIR_LEFT;  break;
-                case 77: if (s2->direction != DIR_LEFT)  s2->direction = DIR_RIGHT; break;
+                case 72: if (last_dir2 != DIR_DOWN)  s2->direction = DIR_UP;    break;
+                case 80: if (last_dir2 != DIR_UP)    s2->direction = DIR_DOWN;  break;
+                case 75: if (last_dir2 != DIR_RIGHT) s2->direction = DIR_LEFT;  break;
+                case 77: if (last_dir2 != DIR_LEFT)  s2->direction = DIR_RIGHT; break;
             }
         } else {
-            if      ((ch == 'w' || ch == 'W') && s1->direction != DIR_DOWN)  s1->direction = DIR_UP;
-            else if ((ch == 's' || ch == 'S') && s1->direction != DIR_UP)    s1->direction = DIR_DOWN;
-            else if ((ch == 'a' || ch == 'A') && s1->direction != DIR_RIGHT) s1->direction = DIR_LEFT;
-            else if ((ch == 'd' || ch == 'D') && s1->direction != DIR_LEFT)  s1->direction = DIR_RIGHT;
+            if      ((ch == 'w' || ch == 'W') && last_dir1 != DIR_DOWN)  s1->direction = DIR_UP;
+            else if ((ch == 's' || ch == 'S') && last_dir1 != DIR_UP)    s1->direction = DIR_DOWN;
+            else if ((ch == 'a' || ch == 'A') && last_dir1 != DIR_RIGHT) s1->direction = DIR_LEFT;
+            else if ((ch == 'd' || ch == 'D') && last_dir1 != DIR_LEFT)  s1->direction = DIR_RIGHT;
             else if (ch == 27) {
                 *game_over = 1;
                 s1->alive = 0;
