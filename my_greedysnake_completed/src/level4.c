@@ -46,7 +46,9 @@ void level4_run(void) {
         printf("  3 obstacles patrol at different speeds.\n");
         printf("  Dodge them and eat to score!\n\n");
         set_color(6);
-        printf("  * WARNING: Obstacles speed up every 15s!\n\n");
+        printf("  * WARNING: Obstacles speed up every 15s!\n");
+        set_color(10);
+        printf("  * BONUS: Survive 60s to earn +500 score!\n\n");
         set_color(14);
         printf("  Press any key to start...\n");
         set_color(7);
@@ -212,12 +214,27 @@ void level4_run(void) {
         if (game_over) {
             printf("\n==== GAME EXITED ====\n");
         } else {
+            int base_score = snake.score;
+            int survival_bonus = 0;
+            
             if (win) {
+                /* 通关奖励：存活满60秒，额外奖励500分 */
+                survival_bonus = 500;
+                snake.score += survival_bonus;
+                
                 set_color(10);
                 printf("\n==== CONGRATULATIONS! YOU SURVIVED 60 SECONDS! ====\n");
+                set_color(14);
+                printf("  Base Score:      %d\n", base_score);
+                set_color(11);
+                printf("  Survival Bonus: +%d  (60s Clear Reward!)\n", survival_bonus);
+                set_color(10);
+                printf("  --------------------------------\n");
+                printf("  TOTAL SCORE:     %d\n", snake.score);
                 set_color(15);
             } else {
                 printf("\n==== YOU DIED! YOU SURVIVED %d SECONDS ====\n", 60 - time_left);
+                printf("  Score: %d  (Survive 60s for +500 bonus!)\n", base_score);
             }
             prompt_and_update_leaderboard(snake.score, 4);
         }
